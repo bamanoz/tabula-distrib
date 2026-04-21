@@ -1,0 +1,65 @@
+{
+  "id": "gateway-telegram",
+  "config": {
+    "entries": [
+      {
+        "key": "provider_override",
+        "type": "string",
+        "default": "",
+        "global_key": "gateway.telegram.provider_override",
+        "env": "TABULA_SKILL_GATEWAY_TELEGRAM_PROVIDER_OVERRIDE"
+      },
+      {
+        "key": "api_timeout",
+        "type": "float",
+        "default": 10,
+        "global_key": "gateway.telegram.api_timeout",
+        "env": "TABULA_SKILL_GATEWAY_TELEGRAM_API_TIMEOUT",
+        "env_aliases": [
+          "TABULA_TELEGRAM_API_TIMEOUT"
+        ]
+      },
+      {
+        "key": "session.idle_ttl",
+        "type": "float",
+        "default": 900,
+        "global_key": "gateway.telegram.session.idle_ttl",
+        "env": "TABULA_SKILL_GATEWAY_TELEGRAM_SESSION_IDLE_TTL",
+        "env_aliases": [
+          "TABULA_TELEGRAM_SESSION_IDLE_TTL"
+        ]
+      },
+      {
+        "key": "session.max_age",
+        "type": "float",
+        "default": 21600,
+        "global_key": "gateway.telegram.session.max_age",
+        "env": "TABULA_SKILL_GATEWAY_TELEGRAM_SESSION_MAX_AGE",
+        "env_aliases": [
+          "TABULA_TELEGRAM_SESSION_MAX_AGE"
+        ]
+      },
+      {
+        "key": "session.cleanup_interval",
+        "type": "float",
+        "default": 30,
+        "global_key": "gateway.telegram.session.cleanup_interval",
+        "env": "TABULA_SKILL_GATEWAY_TELEGRAM_SESSION_CLEANUP_INTERVAL",
+        "env_aliases": [
+          "TABULA_TELEGRAM_SESSION_CLEANUP_INTERVAL"
+        ]
+      },
+      {
+        "key": "bot_tokens",
+        "type": "string_list",
+        "secret": true,
+        "global_key": "gateway.telegram.bot_tokens",
+        "env": "TABULA_SKILL_GATEWAY_TELEGRAM_BOT_TOKENS",
+        "env_aliases": [
+          "TELEGRAM_BOT_TOKENS"
+        ],
+        "store_id": "gateway-telegram.bot_tokens"
+      }
+    ]
+  }
+}

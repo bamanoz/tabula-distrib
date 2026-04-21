@@ -1,0 +1,39 @@
+{
+  "id": "driver-openai",
+  "config": {
+    "entries": [
+      {
+        "key": "api_key",
+        "type": "string",
+        "secret": true,
+        "required": true,
+        "global_key": "openai.api_key",
+        "env": "TABULA_SKILL_DRIVER_OPENAI_API_KEY",
+        "env_aliases": [
+          "OPENAI_API_KEY"
+        ],
+        "store_id": "driver-openai.api_key"
+      },
+      {
+        "key": "base_url",
+        "type": "string",
+        "default": "https://api.openai.com/v1",
+        "global_key": "openai.base_url",
+        "env": "TABULA_SKILL_DRIVER_OPENAI_BASE_URL",
+        "env_aliases": [
+          "OPENAI_BASE_URL"
+        ]
+      },
+      {
+        "key": "model",
+        "type": "string",
+        "default": "gpt-5.4",
+        "global_key": "openai.model",
+        "env": "TABULA_SKILL_DRIVER_OPENAI_MODEL",
+        "env_aliases": [
+          "OPENAI_MODEL"
+        ]
+      }
+    ]
+  }
+}

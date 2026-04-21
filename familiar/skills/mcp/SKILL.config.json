@@ -1,0 +1,37 @@
+{
+  "id": "mcp",
+  "config": {
+    "entries": [
+      {
+        "key": "pool.url",
+        "type": "string",
+        "default": "",
+        "global_key": "mcp.pool.url",
+        "env": "TABULA_SKILL_MCP_POOL_URL",
+        "env_aliases": [
+          "TABULA_MCP_POOL_URL"
+        ]
+      },
+      {
+        "key": "pool.host",
+        "type": "string",
+        "default": "0.0.0.0",
+        "global_key": "mcp.pool.host",
+        "env": "TABULA_SKILL_MCP_POOL_HOST",
+        "env_aliases": [
+          "TABULA_MCP_POOL_HOST"
+        ]
+      },
+      {
+        "key": "pool.port",
+        "type": "int",
+        "default": 0,
+        "global_key": "mcp.pool.port",
+        "env": "TABULA_SKILL_MCP_POOL_PORT",
+        "env_aliases": [
+          "TABULA_MCP_POOL_PORT"
+        ]
+      }
+    ]
+  }
+}

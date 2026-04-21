@@ -1,0 +1,15 @@
+[[bundles]]
+name   = "base"
+source = "local:/Users/mak/src/tabula-bundles/base"
+
+[[bundles]]
+name   = "files"
+source = "local:/Users/mak/src/tabula-bundles/files"
+
+[[bundles]]
+name   = "drivers"
+source = "local:/Users/mak/src/tabula-bundles/drivers"
+
+[[bundles]]
+name   = "memory"
+source = "local:/Users/mak/src/tabula-bundles/memory"

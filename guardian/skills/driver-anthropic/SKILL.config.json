@@ -1,0 +1,39 @@
+{
+  "id": "driver-anthropic",
+  "config": {
+    "entries": [
+      {
+        "key": "api_key",
+        "type": "string",
+        "secret": true,
+        "required": true,
+        "global_key": "anthropic.api_key",
+        "env": "TABULA_SKILL_DRIVER_ANTHROPIC_API_KEY",
+        "env_aliases": [
+          "ANTHROPIC_API_KEY"
+        ],
+        "store_id": "driver-anthropic.api_key"
+      },
+      {
+        "key": "base_url",
+        "type": "string",
+        "default": "https://api.anthropic.com",
+        "global_key": "anthropic.base_url",
+        "env": "TABULA_SKILL_DRIVER_ANTHROPIC_BASE_URL",
+        "env_aliases": [
+          "ANTHROPIC_BASE_URL"
+        ]
+      },
+      {
+        "key": "model",
+        "type": "string",
+        "default": "claude-sonnet-4-6",
+        "global_key": "anthropic.model",
+        "env": "TABULA_SKILL_DRIVER_ANTHROPIC_MODEL",
+        "env_aliases": [
+          "ANTHROPIC_MODEL"
+        ]
+      }
+    ]
+  }
+}

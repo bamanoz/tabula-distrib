@@ -1,0 +1,14 @@
+[distro]
+name = "guardian"
+
+# Guardian keeps distro-specific drivers/gateway/execute-code in-tree. It only
+# imports the base bundle for shared hooks / skill-contract / tabula-guide.
+
+[[bundles]]
+name   = "base"
+source = "git+https://github.com/bamanoz/tabula-bundles.git@main#path=base"
+skills = ["hook-logger", "hook-permissions", "skill-contract", "tabula-guide"]
+
+[[bundles]]
+name   = "files"
+source = "git+https://github.com/bamanoz/tabula-bundles.git@main#path=files"

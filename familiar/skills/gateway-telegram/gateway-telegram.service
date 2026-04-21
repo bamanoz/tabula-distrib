@@ -1,0 +1,17 @@
+[Unit]
+Description=Tabula Telegram Gateway
+After=network.target
+
+[Service]
+Type=simple
+User=__USER__
+WorkingDirectory=__TABULA_HOME__
+EnvironmentFile=__TABULA_HOME__/.env
+ExecStart=__TABULA_HOME__/skills/gateway-telegram/start.sh
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

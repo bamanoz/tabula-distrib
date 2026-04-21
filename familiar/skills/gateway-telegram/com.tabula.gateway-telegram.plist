@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.tabula.gateway-telegram</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>__TABULA_HOME__/skills/gateway-telegram/start.sh</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>__TABULA_HOME__</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>TABULA_HOME</key>
+        <string>__TABULA_HOME__</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>__TABULA_HOME__/logs/gateway-telegram.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>__TABULA_HOME__/logs/gateway-telegram.error.log</string>
+
+    <key>ThrottleInterval</key>
+    <integer>5</integer>
+</dict>
+</plist>

@@ -1,0 +1,56 @@
+{
+  "id": "gateway-api",
+  "config": {
+    "entries": [
+      {
+        "key": "provider_override",
+        "type": "string",
+        "default": "",
+        "global_key": "gateway.api.provider_override",
+        "env": "TABULA_SKILL_GATEWAY_API_PROVIDER_OVERRIDE"
+      },
+      {
+        "key": "auth_token",
+        "type": "string",
+        "secret": true,
+        "default": "",
+        "global_key": "gateway.api.auth_token",
+        "env": "TABULA_SKILL_GATEWAY_API_AUTH_TOKEN",
+        "env_aliases": [
+          "TABULA_API_AUTH"
+        ],
+        "store_id": "gateway-api.auth_token"
+      },
+      {
+        "key": "session.idle_ttl",
+        "type": "float",
+        "default": 900,
+        "global_key": "gateway.api.session.idle_ttl",
+        "env": "TABULA_SKILL_GATEWAY_API_SESSION_IDLE_TTL",
+        "env_aliases": [
+          "TABULA_API_SESSION_IDLE_TTL"
+        ]
+      },
+      {
+        "key": "session.max_age",
+        "type": "float",
+        "default": 21600,
+        "global_key": "gateway.api.session.max_age",
+        "env": "TABULA_SKILL_GATEWAY_API_SESSION_MAX_AGE",
+        "env_aliases": [
+          "TABULA_API_SESSION_MAX_AGE"
+        ]
+      },
+      {
+        "key": "session.cleanup_interval",
+        "type": "float",
+        "default": 30,
+        "global_key": "gateway.api.session.cleanup_interval",
+        "env": "TABULA_SKILL_GATEWAY_API_SESSION_CLEANUP_INTERVAL",
+        "env_aliases": [
+          "TABULA_API_SESSION_CLEANUP_INTERVAL"
+        ]
+      }
+    ]
+  }
+}

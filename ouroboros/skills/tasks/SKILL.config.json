@@ -1,0 +1,55 @@
+{
+  "id": "tasks",
+  "config": {
+    "entries": [
+      {
+        "key": "max_workers",
+        "type": "int",
+        "default": 2,
+        "env": "TABULA_SKILL_TASKS_MAX_WORKERS"
+      },
+      {
+        "key": "poll_interval_sec",
+        "type": "int",
+        "default": 2,
+        "env": "TABULA_SKILL_TASKS_POLL_INTERVAL_SEC"
+      },
+      {
+        "key": "max_rounds",
+        "type": "int",
+        "default": 20,
+        "env": "TABULA_SKILL_TASKS_MAX_ROUNDS"
+      },
+      {
+        "key": "stall_timeout_sec",
+        "type": "int",
+        "default": 1800,
+        "env": "TABULA_SKILL_TASKS_STALL_TIMEOUT_SEC"
+      },
+      {
+        "key": "soft_timeout_sec",
+        "type": "int",
+        "default": 600,
+        "env": "TABULA_SKILL_TASKS_SOFT_TIMEOUT_SEC"
+      },
+      {
+        "key": "hard_timeout_sec",
+        "type": "int",
+        "default": 1800,
+        "env": "TABULA_SKILL_TASKS_HARD_TIMEOUT_SEC"
+      },
+      {
+        "key": "heartbeat_stale_sec",
+        "type": "int",
+        "default": 120,
+        "env": "TABULA_SKILL_TASKS_HEARTBEAT_STALE_SEC"
+      },
+      {
+        "key": "model",
+        "type": "string",
+        "default": "",
+        "env": "TABULA_SKILL_TASKS_MODEL"
+      }
+    ]
+  }
+}
