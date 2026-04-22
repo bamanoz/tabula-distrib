@@ -1,5 +1,9 @@
 [distro]
-name = "guardian"
+name    = "guardian"
+version = "0.1.0"
+
+[requires]
+kernel = ">=0.8.0,<1.0.0"
 
 # Guardian ships its own provider drivers, gateway, and execute_code skill
 # in-tree (they're tailored to the sandbox runtime). It only needs the shared

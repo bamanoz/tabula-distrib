@@ -1,5 +1,9 @@
 [distro]
-name = "ouroboros"
+name    = "ouroboros"
+version = "0.1.0"
+
+[requires]
+kernel = ">=0.8.0,<1.0.0"
 
 # Ouroboros keeps all of its signature skills (identity, scratchpad, tasks,
 # consciousness, hooks, git, tabula-guide-style commands …) in-tree. External

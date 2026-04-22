@@ -12,7 +12,7 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from skills._ouroboros.lib import session_model_override
-from skills.lib import SkillConfigError, load_skill_config
+from skills._lib import SkillConfigError, load_skill_config
 from skills._drivers.driver_runtime import DriverConfig, DriverRuntime
 from skills._drivers.providers import AnthropicSession
 

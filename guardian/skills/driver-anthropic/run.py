@@ -17,9 +17,9 @@ GUARDIAN_LIB = os.path.join(ROOT, "distrib", "guardian", "skills", "guardian-lib
 if GUARDIAN_LIB not in sys.path:
     sys.path.insert(0, GUARDIAN_LIB)
 
-from skills.lib import SkillConfigError, load_skill_config
-from skills.lib.kernel_client import KernelConnection
-from skills.lib.protocol import (
+from skills._lib import SkillConfigError, load_skill_config
+from skills._lib.kernel_client import KernelConnection
+from skills._lib.protocol import (
     MSG_CANCEL,
     MSG_CONNECT,
     MSG_DONE,

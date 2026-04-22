@@ -36,10 +36,10 @@ if TABULA_HOME not in sys.path:
 
 os.environ.setdefault("TABULA_HOME", TABULA_HOME)
 
-from skills.lib import load_skill_config
-from skills.lib.kernel_client import KernelConnection
+from skills._lib import load_skill_config
+from skills._lib.kernel_client import KernelConnection
 from skills._drivers.provider_selection import ProviderSelectionError, build_driver_command, ensure_provider_ready, resolve_provider
-from skills.lib.protocol import (
+from skills._lib.protocol import (
     MSG_CANCEL, MSG_CONNECT, MSG_DONE, MSG_ERROR, MSG_JOIN, MSG_MEMBER_JOINED,
     MSG_MESSAGE, MSG_STREAM_DELTA, MSG_STREAM_END, MSG_STREAM_START,
     MSG_TOOL_RESULT, MSG_TOOL_USE,

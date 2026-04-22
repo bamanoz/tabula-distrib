@@ -8,7 +8,7 @@ import tempfile
 import time
 from pathlib import Path
 
-from skills.lib.paths import skill_data_dir, skill_logs_dir, tabula_home
+from skills._lib.paths import skill_data_dir, skill_logs_dir, tabula_home
 
 
 SKILL_ID = "ouroboros"

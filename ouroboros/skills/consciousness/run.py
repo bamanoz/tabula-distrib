@@ -21,10 +21,10 @@ from skills._ouroboros.lib import (
     set_next_wakeup as set_next_wakeup_state,
     toggle_consciousness as toggle_consciousness_state,
 )
-from skills.lib import SkillConfigError, load_skill_config
-from skills.lib.kernel_client import KernelConnection
+from skills._lib import SkillConfigError, load_skill_config
+from skills._lib.kernel_client import KernelConnection
 from skills._drivers.prompt_builder import build_main_system_prompt
-from skills.lib.protocol import MSG_CONNECT, MSG_DONE, MSG_ERROR, MSG_HOOK_RESULT, MSG_INIT, MSG_JOIN, MSG_STATUS, MSG_TOOL_RESULT, MSG_TOOL_USE
+from skills._lib.protocol import MSG_CONNECT, MSG_DONE, MSG_ERROR, MSG_HOOK_RESULT, MSG_INIT, MSG_JOIN, MSG_STATUS, MSG_TOOL_RESULT, MSG_TOOL_USE
 from skills._drivers.provider_selection import provider_skill_dir, resolve_provider
 from skills._drivers.providers import AnthropicSession, OpenAIChatCompletionsSession, ToolResult
 

@@ -13,7 +13,7 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from skills._ouroboros.lib import log_activity, log_supervisor  # noqa: E402
-from skills.lib import SkillConfigError, load_skill_config  # noqa: E402
+from skills._lib import SkillConfigError, load_skill_config  # noqa: E402
 
 
 class ToolError(Exception):

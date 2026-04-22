@@ -10,8 +10,8 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from skills._ouroboros.lib import build_context_block, ensure_default_files
-from skills.lib.kernel_client import KernelConnection
-from skills.lib.protocol import MSG_CONNECT, MSG_HOOK, MSG_HOOK_RESULT, HOOK_MODIFY, HOOK_PASS, HOOK_SESSION_START
+from skills._lib.kernel_client import KernelConnection
+from skills._lib.protocol import MSG_CONNECT, MSG_HOOK, MSG_HOOK_RESULT, HOOK_MODIFY, HOOK_PASS, HOOK_SESSION_START
 
 
 TABULA_URL = os.environ.get("TABULA_URL", "ws://localhost:8089/ws")

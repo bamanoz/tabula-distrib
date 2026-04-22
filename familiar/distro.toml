@@ -1,5 +1,9 @@
 [distro]
-name = "familiar"
+name    = "familiar"
+version = "0.1.0"
+
+[requires]
+kernel = ">=0.8.0,<1.0.0"
 
 # The familiar distro's in-tree ``skills/`` contains only its own signature
 # skills: gateway-cli / gateway-api / gateway-telegram / mcp. Everything else
