@@ -1,8 +1,0 @@
-[[bundles]]
-name   = "base"
-source = "local:/Users/mak/src/tabula-bundles/base"
-skills = ["hook-logger", "hook-permissions", "skill-contract", "tabula-guide"]
-
-[[bundles]]
-name   = "files"
-source = "local:/Users/mak/src/tabula-bundles/files"

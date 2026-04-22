@@ -1,14 +1,6 @@
 [distro]
 name = "guardian"
 
-# Guardian keeps distro-specific drivers/gateway/execute-code in-tree. It only
-# imports the base bundle for shared hooks / skill-contract / tabula-guide.
-
-[[bundles]]
-name   = "base"
-source = "git+https://github.com/bamanoz/tabula-bundles.git@main#path=base"
-skills = ["hook-logger", "hook-permissions", "skill-contract", "tabula-guide"]
-
-[[bundles]]
-name   = "files"
-source = "git+https://github.com/bamanoz/tabula-bundles.git@main#path=files"
+# Guardian is intentionally minimal: one tool (execute_code), one CLI gateway,
+# its own provider drivers. It does not pull in any external bundles — every
+# skill it needs lives in this distro's own skills/ tree.
