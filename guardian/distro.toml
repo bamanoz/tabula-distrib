@@ -1,6 +1,15 @@
 [distro]
 name = "guardian"
 
-# Guardian is intentionally minimal: one tool (execute_code), one CLI gateway,
-# its own provider drivers. It does not pull in any external bundles — every
-# skill it needs lives in this distro's own skills/ tree.
+# Guardian ships its own provider drivers, gateway, and execute_code skill
+# in-tree (they're tailored to the sandbox runtime). It only needs the shared
+# _drivers/ support code (providers, provider_selection, etc.) from the
+# drivers bundle — none of that bundle's actual skills.
+#
+# An empty `skills = []` allowlist pulls just the support dirs (anything
+# starting with `_`) without installing any skills.
+
+[[bundles]]
+name   = "drivers"
+source = "git+https://github.com/bamanoz/tabula-bundles.git@main#path=drivers"
+skills = []
