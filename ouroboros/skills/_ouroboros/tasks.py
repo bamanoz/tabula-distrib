@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from skills._ouroboros.lib import DATA_DIR, LOGS_DIR, append_jsonl, log_activity, read_text, safe_name, write_text
-from skills._lib.filelock import lock_file, unlock_file
+from skills._pylib.filelock import lock_file, unlock_file
 
 
 TASKS_DIR = DATA_DIR / "tasks"
@@ -513,4 +513,3 @@ def mark_hard_timeout(task_id: str, runtime_sec: float, *, requeued: bool) -> No
         requeued=requeued,
     )
     log_activity("task_hard_timeout", f"task={task_id} runtime={int(runtime_sec)}s requeued={requeued}")
-

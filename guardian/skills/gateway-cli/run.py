@@ -16,9 +16,9 @@ ROOT = os.environ.get("TABULA_HOME", os.path.expanduser("~/.tabula"))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from skills._lib.kernel_client import KernelConnection
+from skills._pylib.kernel_client import KernelConnection
 from skills._drivers.provider_selection import ProviderSelectionError, resolve_driver_command
-from skills._lib.protocol import (
+from skills._pylib.protocol import (
     MSG_CANCEL,
     MSG_CONNECT,
     MSG_DONE,

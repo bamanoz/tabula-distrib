@@ -39,7 +39,7 @@ from skills._ouroboros.tasks import (
     task_wait_text,
     write_mailbox_message,
 )
-from skills._lib import SkillConfigError, load_skill_config
+from skills._pylib import SkillConfigError, load_skill_config
 
 
 TABULA_URL = os.environ.get("TABULA_URL", "ws://localhost:8089/ws")
@@ -250,7 +250,7 @@ def maybe_handle_local_tool(name: str, tool_input: dict, provider_name: str, pro
 
 
 def run_task_rounds(task: dict, conn, provider_name: str, provider, max_rounds: int) -> tuple[str, dict]:
-    from skills._lib.protocol import MSG_ERROR, MSG_TOOL_RESULT, MSG_TOOL_USE
+    from skills._pylib.protocol import MSG_ERROR, MSG_TOOL_RESULT, MSG_TOOL_USE
     from skills._drivers.providers import ToolResult
     description = str(task.get("description", "")).strip()
     context = str(task.get("context", "")).strip()
@@ -310,8 +310,8 @@ def run_task_rounds(task: dict, conn, provider_name: str, provider, max_rounds: 
 
 
 def worker_main(task_id: str) -> int:
-    from skills._lib.kernel_client import KernelConnection
-    from skills._lib.protocol import MSG_CONNECT, MSG_ERROR, MSG_INIT, MSG_JOIN, MSG_TOOL_RESULT, MSG_TOOL_USE
+    from skills._pylib.kernel_client import KernelConnection
+    from skills._pylib.protocol import MSG_CONNECT, MSG_ERROR, MSG_INIT, MSG_JOIN, MSG_TOOL_RESULT, MSG_TOOL_USE
 
     task = get_task(task_id)
     if not task:

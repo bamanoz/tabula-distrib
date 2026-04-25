@@ -11,7 +11,7 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from skills._drivers.prompt_builder import compatible_with_kernel_tools, ensure_project_files
-from skills._lib.protocol import DEFAULT_KERNEL_TOOLS
+from skills._pylib.protocol import DEFAULT_KERNEL_TOOLS
 from skills._drivers.provider_selection import resolve_provider
 
 

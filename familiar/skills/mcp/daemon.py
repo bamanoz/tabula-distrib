@@ -36,8 +36,8 @@ for p in (SKILLS_ROOT, DISTRIB_SKILLS_ROOT, os.path.dirname(os.path.dirname(os.p
 
 os.environ.setdefault("TABULA_HOME", ROOT)
 
-from skills._lib import load_skill_config
-from skills._lib.paths import ensure_parent, skill_run_dir
+from skills._pylib import load_skill_config
+from skills._pylib.paths import ensure_parent, skill_run_dir
 
 from .client import MCPError
 from .pool import ClientPool

@@ -70,7 +70,7 @@ Original references:
 - `ouroboros/tools/core.py`: `_codebase_digest`, `_summarize_dialogue`
 
 To do:
-- Audit `skills/_lib/compaction.py` — does it cover Ouroboros-style
+- Audit `skills/_pylib/compaction.py` — does it cover Ouroboros-style
   message-soft-cap + tool-result compaction + LLM-based compaction?
   If not, port the missing pieces.
 - `compact_context` tool exposed to the LLM.

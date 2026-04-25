@@ -29,8 +29,8 @@ from skills._drivers.prompt_builder import (
     compatible_with_kernel_tools,
     ensure_project_files as ensure_project_files_prompt_builder,
 )
-from skills._lib.paths import skills_dir as flat_skills_dir, templates_dir as flat_templates_dir
-from skills._lib.protocol import DEFAULT_KERNEL_TOOLS
+from skills._pylib.paths import skills_dir as flat_skills_dir, templates_dir as flat_templates_dir
+from skills._pylib.protocol import DEFAULT_KERNEL_TOOLS
 from skills._drivers.provider_selection import resolve_provider
 
 TABULA_HOME = os.environ.get("TABULA_HOME", os.path.join(os.path.expanduser("~"), ".tabula"))
