@@ -1,0 +1,15 @@
+id = "gateway-cli"
+name = "Claw CLI Gateway"
+version = "0.1.0"
+runtime = "python"
+entry = "run.py"
+description = "Interactive CLI WebSocket client"
+tags = ["gateway", "interactive", "terminal"]
+
+[launch]
+command = "tabula-claw"
+terminal = true
+
+[bus]
+sends = ["message", "cancel", "tool_use"]
+receives = ["stream_start", "stream_delta", "stream_end", "done", "error", "tool_result", "status"]

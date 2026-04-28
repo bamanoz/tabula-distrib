@@ -7,7 +7,7 @@ kernel = ">=0.8.0,<1.0.0"
 
 # The coder distro's signature skill lives in-tree under ``skills/``
 # (currently just ``gateway-tui`` — TypeScript/Ink). Everything else comes
-# from external bundles shared with familiar.
+# from external bundles shared with claw.
 
 [[bundles]]
 name   = "base"

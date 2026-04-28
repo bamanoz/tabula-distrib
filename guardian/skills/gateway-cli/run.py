@@ -13,12 +13,14 @@ import time
 from uuid import uuid4
 
 ROOT = os.environ.get("TABULA_HOME", os.path.expanduser("~/.tabula"))
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
+HOME_LIB = os.path.join(ROOT, "_lib", "python", "src")
+for path in (HOME_LIB, ROOT):
+    if path not in sys.path:
+        sys.path.insert(0, path)
 
-from skills._pylib.kernel_client import KernelConnection
-from skills._drivers.provider_selection import ProviderSelectionError, resolve_driver_command
-from skills._pylib.protocol import (
+from tabula_plugin_sdk.kernel_client import KernelConnection
+from tabula_drivers.provider_selection import ProviderSelectionError, resolve_driver_command
+from tabula_plugin_sdk.protocol import (
     MSG_CANCEL,
     MSG_CONNECT,
     MSG_DONE,

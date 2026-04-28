@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@tabula/skill-sdk": "file:../../../../tabula-bundles/_lib/typescript/dist/tabula-skill-sdk-0.1.0.tgz",
     "ink": "^5.0.1",
     "ink-spinner": "^5.0.0",
     "ink-text-input": "^6.0.0",

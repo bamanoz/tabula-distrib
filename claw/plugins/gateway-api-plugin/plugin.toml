@@ -1,0 +1,15 @@
+id = "gateway-api"
+name = "Gateway API"
+version = "0.1.0"
+runtime = "python"
+entry = "run.py"
+description = "Plugin-owned supervisor for the OpenAI-compatible HTTP API gateway"
+
+[config]
+enabled = true
+port = 8088
+
+[[tools]]
+name = "gateway_api_status"
+description = "Return gateway-api supervisor status"
+deadline_ms = 5000

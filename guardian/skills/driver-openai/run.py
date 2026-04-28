@@ -20,16 +20,18 @@ import sys
 from pathlib import Path
 
 ROOT = os.environ.get("TABULA_HOME", os.path.expanduser("~/.tabula"))
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
+HOME_LIB = os.path.join(ROOT, "_lib", "python", "src")
+for path in (HOME_LIB, ROOT):
+    if path not in sys.path:
+        sys.path.insert(0, path)
 
 GUARDIAN_LIB = os.path.join(ROOT, "distrib", "guardian", "skills", "guardian-lib")
 if GUARDIAN_LIB not in sys.path:
     sys.path.insert(0, GUARDIAN_LIB)
 
-from skills._pylib import SkillConfigError, load_skill_config
-from skills._pylib.kernel_client import KernelConnection
-from skills._pylib.protocol import (
+from tabula_plugin_sdk import SkillConfigError, load_skill_config
+from tabula_plugin_sdk.kernel_client import KernelConnection
+from tabula_plugin_sdk.protocol import (
     MSG_CANCEL,
     MSG_CONNECT,
     MSG_DONE,
@@ -43,7 +45,7 @@ from skills._pylib.protocol import (
     MSG_TOOL_RESULT,
     MSG_TOOL_USE,
 )
-from skills._drivers.providers import ToolResult, _openai_client, ensure_api_base, provider_error_message
+from tabula_drivers.providers import ToolResult, _openai_client, ensure_api_base, provider_error_message
 from runtime import (
     read_guardian_answer,
     reset_guardian_turn,

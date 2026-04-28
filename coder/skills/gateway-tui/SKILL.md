@@ -2,7 +2,6 @@
 name: gateway-tui
 description: "TUI gateway for the coder distro. Run: `tabula-coder`. Provides thread view, streaming, tool activity, approvals modal, todo/agents panes, basic slash commands (/help, /quit, /todo, /agents, /diff, /approvals, /sessions, /model)."
 user-invocable: false
-requires-kernel-tools: ["process_spawn", "process_kill"]
 ---
 
 # gateway-tui
@@ -22,7 +21,7 @@ The gateway:
 1. Connects to the kernel via `TABULA_URL` (default `ws://localhost:8089/ws`).
 2. `CONNECT` with sends `[message, tool_use, cancel]` and receives streaming + init.
 3. `JOIN` a new or resumed session (name `sess-<uuid8>` unless `--session` given).
-4. `process_spawn`s the unified driver (`driver`) with the selected provider.
+4. Starts the unified driver client with the selected provider.
 5. Renders the live thread, tool activity, and panels.
 
 ## Panels & slash commands

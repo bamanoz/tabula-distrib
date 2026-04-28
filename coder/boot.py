@@ -2,7 +2,7 @@
 """
 Tabula boot script for the coder distro.
 
-Like familiar/boot.py, but additionally registers MCP servers as first-class
+Like claw/boot.py, but additionally registers MCP servers as first-class
 kernel tools (`mcp__<server>__<tool>`) via `mcp.register.mcp_tool_entries`.
 
 Contract: stdout must be a single JSON object with:
@@ -20,17 +20,19 @@ import subprocess
 import sys
 
 ROOT = os.environ.get("TABULA_HOME", os.path.expanduser("~/.tabula"))
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
+HOME_LIB = os.path.join(ROOT, "_lib", "python", "src")
+for path in (HOME_LIB, ROOT):
+    if path not in sys.path:
+        sys.path.insert(0, path)
 
-from skills._drivers.prompt_builder import (
+from tabula_drivers.prompt_builder import (
     compatible_with_kernel_tools,
     ensure_project_files as ensure_project_files_prompt_builder,
 )
-from skills._pylib.paths import skills_dir as flat_skills_dir, templates_dir as flat_templates_dir
-from skills._pylib.protocol import DEFAULT_KERNEL_TOOLS
-from skills._drivers.provider_selection import resolve_provider
-from skills._drivers.agents import load_agents, serialize_agents
+from tabula_plugin_sdk.paths import skills_dir as flat_skills_dir, templates_dir as flat_templates_dir
+from tabula_plugin_sdk.protocol import DEFAULT_KERNEL_TOOLS
+from tabula_drivers.provider_selection import resolve_provider
+from tabula_drivers.agents import load_agents, serialize_agents
 
 TABULA_HOME = os.environ.get("TABULA_HOME", os.path.join(os.path.expanduser("~"), ".tabula"))
 
@@ -52,6 +54,7 @@ def load_env() -> None:
 load_env()
 
 SKILLS_DIR = str(flat_skills_dir())
+PLUGINS_DIR = os.path.join(TABULA_HOME, "plugins")
 CONFIG_SKILLS_DIR = os.path.join(TABULA_HOME, "config", "skills")
 TEMPLATES_DIR = str(flat_templates_dir())
 if sys.platform == "win32":
@@ -59,12 +62,20 @@ if sys.platform == "win32":
 else:
     VENV_PYTHON = os.path.join(TABULA_HOME, ".venv", "bin", "python3")
 TABULA_URL = os.environ.get("TABULA_URL", "ws://localhost:8089/ws")
-PERMISSIONS_FILE = os.path.join(CONFIG_SKILLS_DIR, "hook-permissions", "permissions.json")
+PERMISSIONS_FILE = os.path.join(TABULA_HOME, "config", "plugins", "hook-permissions", "permissions.json")
 APPROVALS_FILE = os.path.join(CONFIG_SKILLS_DIR, "hook-approvals", "rules.json")
-MCP_CONFIG = os.path.join(CONFIG_SKILLS_DIR, "mcp", "servers.json")
+MCP_CONFIG = os.path.join(TABULA_HOME, "config", "plugins", "mcp", "servers.json")
 TABULA_PROVIDER = os.environ.get("TABULA_PROVIDER")
 
 ACTIVE_PROVIDER = resolve_provider(TABULA_PROVIDER, tabula_home=TABULA_HOME, require_ready=False)
+
+
+def mcp_plugin_dir() -> str:
+    return os.path.join(PLUGINS_DIR, "mcp")
+
+
+def mcp_plugin_script() -> str:
+    return os.path.join(mcp_plugin_dir(), "run.py")
 
 
 def include_skill(name: str) -> bool:
@@ -187,21 +198,36 @@ def discover_skill_tools() -> list[dict]:
     return tools
 
 
+def discover_plugins() -> list[dict]:
+    plugins_dir = os.path.join(TABULA_HOME, "plugins")
+    if not os.path.isdir(plugins_dir):
+        return []
+    entries = []
+    for name in sorted(os.listdir(plugins_dir)):
+        manifest = os.path.join(plugins_dir, name, "plugin.toml")
+        if os.path.isfile(manifest):
+            entries.append({"manifest_path": manifest})
+    return entries
+
+
 def discover_mcp_first_class_tools() -> list[dict]:
     """Register MCP server tools as first-class kernel tools."""
     if os.environ.get("TABULA_SKIP_MCP"):
         return []
     if not os.path.isfile(MCP_CONFIG):
         return []
-    mcp_skill_dir = os.path.join(SKILLS_DIR, "mcp")
-    if not os.path.isdir(mcp_skill_dir):
+    mcp_dir = mcp_plugin_dir()
+    if not os.path.isdir(mcp_dir):
         return []
     try:
+        plugin_parent = os.path.dirname(mcp_dir)
+        if plugin_parent not in sys.path:
+            sys.path.insert(0, plugin_parent)
         from mcp.register import mcp_tool_entries  # type: ignore
     except Exception as exc:
         print(f"warning: cannot import mcp.register: {exc}", file=sys.stderr)
         return []
-    return mcp_tool_entries(venv_python=VENV_PYTHON, skill_rel_path="mcp")
+    return mcp_tool_entries(venv_python=VENV_PYTHON, runtime_rel_path="plugins/mcp")
 
 
 def discover_slash_commands() -> list[dict]:
@@ -271,9 +297,9 @@ def build_spawn() -> list[str]:
     cron_skill = os.path.join(SKILLS_DIR, "cron", "run.py")
     if os.path.isfile(cron_skill) and not has_crontab():
         procs.append(f"{VENV_PYTHON} skills/cron/run.py daemon")
-    mcp_skill = os.path.join(SKILLS_DIR, "mcp", "run.py")
-    if os.path.isfile(mcp_skill) and os.path.isfile(MCP_CONFIG):
-        procs.append(f"{VENV_PYTHON} skills/mcp/run.py pool")
+    mcp_script = mcp_plugin_script()
+    if os.path.isfile(mcp_script) and os.path.isfile(MCP_CONFIG):
+        procs.append(f"{VENV_PYTHON} plugins/mcp/run.py pool")
     sessions_skill = os.path.join(SKILLS_DIR, "sessions", "run.py")
     if os.path.isfile(sessions_skill):
         procs.append(f"{VENV_PYTHON} skills/sessions/run.py daemon")
@@ -304,6 +330,7 @@ def main():
         "spawn": build_spawn(),
         "kernel_tools": discover_kernel_tools(),
         "tools": skill_tools,
+        "plugins": discover_plugins(),
         "commands": slash_commands,
         "meta": {
             "agents": serialize_agents(load_agents()),

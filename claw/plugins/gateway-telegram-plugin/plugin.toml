@@ -1,0 +1,14 @@
+id = "gateway-telegram"
+name = "Gateway Telegram"
+version = "0.1.0"
+runtime = "python"
+entry = "run.py"
+description = "Plugin-owned supervisor for the Telegram gateway daemon"
+
+[config]
+enabled = true
+
+[[tools]]
+name = "gateway_telegram_status"
+description = "Return gateway-telegram supervisor status"
+deadline_ms = 5000
