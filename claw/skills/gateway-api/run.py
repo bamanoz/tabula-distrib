@@ -11,6 +11,7 @@ import os
 import queue
 import re
 import shlex
+import signal
 import subprocess
 import sys
 import threading
@@ -45,7 +46,6 @@ from tabula_plugin_sdk.protocol import (
     MSG_CANCEL, MSG_CONNECT, MSG_DONE, MSG_ERROR, MSG_JOIN, MSG_MEMBER_JOINED,
     MSG_MESSAGE, MSG_STREAM_DELTA, MSG_STREAM_END, MSG_STREAM_START,
     MSG_TOOL_RESULT, MSG_TOOL_USE,
-    TOOL_PROCESS_SPAWN, TOOL_PROCESS_KILL,
 )
 
 TABULA_URL = os.environ.get("TABULA_URL", "ws://localhost:8089/ws")
@@ -95,7 +95,7 @@ class SessionState:
     def __init__(self, session_id: str):
         self.session_id = session_id
         self.conn = KernelConnection(TABULA_URL)
-        self.driver_pid: int | None = None
+        self.driver_proc: subprocess.Popen | None = None
         self.events: queue.Queue[tuple[str, str]] = queue.Queue()
         self.alive = True
         self.turn_lock = threading.Lock()
@@ -120,26 +120,13 @@ class SessionState:
         self.conn.send({"type": MSG_JOIN, "session": self.session_id})
         self.conn.recv()
 
-        # Spawn driver
-        spawn_cmd = f"{driver_cmd} --session {self.session_id}"
-        self.conn.send({
-            "type": MSG_TOOL_USE,
-            "id": "spawn-driver",
-            "name": TOOL_PROCESS_SPAWN,
-            "input": {"command": spawn_cmd},
-        })
-        deadline = time.time() + 15
-        while time.time() < deadline:
-            msg = self.conn.recv(timeout=15)
-            if msg is None:
-                raise RuntimeError("lost connection while spawning driver")
-            if msg.get("type") == MSG_TOOL_RESULT and msg.get("id") == "spawn-driver":
-                output = msg.get("output", "")
-                m = re.match(r"PID (\d+)", output)
-                if m:
-                    self.driver_pid = int(m.group(1))
-                    break
-                raise RuntimeError(f"driver spawn failed: {output}")
+        self.driver_proc = subprocess.Popen(
+            shlex.split(driver_cmd) + ["--session", self.session_id],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
 
         # Wait for driver to join the session
         deadline = time.time() + 10
@@ -235,19 +222,14 @@ class SessionState:
                 return
             self.alive = False
             self.closed_reason = reason
-            driver_pid = self.driver_pid
-            self.driver_pid = None
+            driver_proc = self.driver_proc
+            self.driver_proc = None
 
-        if driver_pid is not None:
+        if driver_proc is not None and driver_proc.poll() is None:
             try:
-                self.conn.send({
-                    "type": MSG_TOOL_USE,
-                    "id": "kill-driver",
-                    "name": TOOL_PROCESS_KILL,
-                    "input": {"pid": driver_pid},
-                })
+                os.killpg(os.getpgid(driver_proc.pid), signal.SIGTERM)
             except Exception:
-                pass
+                driver_proc.terminate()
         self.conn.close()
 
 

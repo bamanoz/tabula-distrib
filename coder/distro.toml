@@ -39,8 +39,8 @@ name   = "coder-tasks"
 source = "git+https://github.com/bamanoz/tabula-bundles.git@main#path=coder-tasks"
 
 [[bundles]]
-name   = "coder-subagents"
-source = "git+https://github.com/bamanoz/tabula-bundles.git@main#path=coder-subagents"
+name   = "subagents"
+source = "git+https://github.com/bamanoz/tabula-bundles.git@main#path=subagents"
 
 [[bundles]]
 name   = "coder-review"

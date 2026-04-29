@@ -7,9 +7,8 @@ and outputs full kernel config as JSON to stdout.
 
 Contract: stdout must be a single JSON object with:
   - url: kernel websocket URL
-  - spawn: list of commands to start
-  - tools: list of skill tool definitions
-  - commands: list of slash commands
+  - skills: list of skill tool definitions
+  - plugins: list of plugin manifest paths
 """
 from __future__ import annotations
 
@@ -28,11 +27,9 @@ for path in (HOME_LIB, ROOT):
 from tabula_drivers.prompt_builder import (
     build_main_system_prompt as build_main_system_prompt_shared,
     build_subagent_system_prompt as build_subagent_system_prompt_shared,
-    compatible_with_kernel_tools,
     ensure_project_files as ensure_project_files_prompt_builder,
 )
 from tabula_plugin_sdk.paths import skills_dir as flat_skills_dir, templates_dir as flat_templates_dir
-from tabula_plugin_sdk.protocol import DEFAULT_KERNEL_TOOLS
 from tabula_drivers.provider_selection import resolve_provider
 
 TABULA_HOME = os.environ.get("TABULA_HOME", os.path.join(os.path.expanduser("~"), ".tabula"))
@@ -381,15 +378,11 @@ def scan_skills() -> list[str]:
     Hidden skills (not injected into system prompt) are those without
     a description field.
     """
-    visible_tools = [{"name": name} for name in discover_kernel_tools()]
     skills = []
     for rel_path, skill_md in walk_skills():
         with open(skill_md) as f:
             raw = f.read().strip()
         meta, body = parse_skill_md(raw)
-        if not compatible_with_kernel_tools(meta, visible_tools):
-            continue
-
         description = meta.get("description", "")
         if not description:
             continue
@@ -399,46 +392,17 @@ def scan_skills() -> list[str]:
     return skills
 
 
-KERNEL_TOOLS = set(DEFAULT_KERNEL_TOOLS)
-
-
-def discover_kernel_tools() -> list[str]:
-    """Return built-in kernel tools exposed by this distro boot config."""
-    raw = os.environ.get("TABULA_KERNEL_TOOLS", "")
-    if not raw.strip():
-        return list(DEFAULT_KERNEL_TOOLS)
-    tools = []
-    unknown = []
-    for item in raw.split(","):
-        name = item.strip()
-        if not name:
-            continue
-        if name in KERNEL_TOOLS and name not in tools:
-            tools.append(name)
-            continue
-        if name not in unknown:
-            unknown.append(name)
-    if unknown:
-        allowed = ", ".join(sorted(KERNEL_TOOLS))
-        bad = ", ".join(unknown)
-        raise SystemExit(f"unknown kernel tool(s): {bad}. Allowed: {allowed}")
-    return tools
-
-
 def discover_skill_tools() -> list[dict]:
     """Scan SKILL.md frontmatter for tool definitions (recursive).
 
     Returns tools in kernel format, with an added 'exec' field for dispatch.
     """
-    visible_tools = [{"name": name} for name in discover_kernel_tools()]
     tools = []
     seen_index: dict[str, int] = {}
     for rel_path, skill_md in walk_skills():
         with open(skill_md) as f:
             raw = f.read().strip()
         meta, _ = parse_skill_md(raw)
-        if not compatible_with_kernel_tools(meta, visible_tools):
-            continue
         skill_tools = meta.get("tools")
         if not isinstance(skill_tools, list):
             skill_tools = _parse_skill_tools_from_frontmatter(raw)
@@ -447,9 +411,6 @@ def discover_skill_tools() -> list[dict]:
         for tool in skill_tools:
             tool_name = tool.get("name", "")
             if not tool_name:
-                continue
-            if tool_name in KERNEL_TOOLS:
-                print(f"warning: tool {tool_name!r} in skill {rel_path!r} collides with kernel tool, skipping", file=sys.stderr)
                 continue
             if "exec" not in tool:
                 tool["exec"] = f"{VENV_PYTHON} skills/{rel_path}/run.py tool {tool_name}"
@@ -481,15 +442,11 @@ def discover_slash_commands() -> list[dict]:
     Returns list of {"name", "description", "body"} for gateway slash commands.
     Only includes skills with explicit `user-invocable: true` in frontmatter.
     """
-    visible_tools = [{"name": name} for name in discover_kernel_tools()]
     commands = []
     for rel_path, skill_md in walk_skills():
         with open(skill_md) as f:
             raw = f.read().strip()
         meta, body = parse_skill_md(raw)
-        if not compatible_with_kernel_tools(meta, visible_tools):
-            continue
-
         ui = meta.get("user-invocable", "")
         if ui.lower() not in ("true", "yes", "1"):
             continue
@@ -681,56 +638,15 @@ FIRST_RUN_INSTRUCTION = (
 
 
 def build_system_prompt(skills: list[str], mcp_tools: dict[str, list[dict]] | None = None) -> str:
-    visible_tools = [{"name": name} for name in discover_kernel_tools()]
     return build_main_system_prompt_shared(
         provider=ACTIVE_PROVIDER,
         skills=skills,
         mcp_tools=mcp_tools,
-        visible_tools=visible_tools,
     )
 
 
 def build_subagent_prompt() -> str:
-    visible_tools = [{"name": name} for name in discover_kernel_tools()]
-    return build_subagent_system_prompt_shared(provider=ACTIVE_PROVIDER, visible_tools=visible_tools)
-
-
-def has_crontab() -> bool:
-    """Check if OS crontab is available."""
-    try:
-        result = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
-        return result.returncode == 0 or "no crontab" in result.stderr.lower()
-    except FileNotFoundError:
-        return False
-
-
-def build_spawn() -> list[str]:
-    """Determine which processes to spawn."""
-    procs = []
-    # Spawn cron daemon only when OS crontab is unavailable
-    cron_skill = os.path.join(SKILLS_DIR, "cron", "run.py")
-    if os.path.isfile(cron_skill) and not has_crontab():
-        procs.append(f"{VENV_PYTHON} skills/cron/run.py daemon")
-    # Spawn MCP pool when MCP servers are configured
-    mcp_script = mcp_plugin_script()
-    if os.path.isfile(mcp_script) and os.path.isfile(MCP_CONFIG):
-        procs.append(f"{VENV_PYTHON} plugins/mcp/run.py pool")
-    # Spawn session registry daemon
-    sessions_skill = os.path.join(SKILLS_DIR, "sessions", "run.py")
-    if os.path.isfile(sessions_skill):
-        procs.append(f"{VENV_PYTHON} skills/sessions/run.py daemon")
-    # Spawn hook skills (search recursively, follows symlinks for bundles)
-    for rel_path, skill_md in walk_skills():
-        leaf = os.path.basename(rel_path)
-        if not leaf.startswith("hook-"):
-            continue
-        # hook-permissions only spawns when its permissions config file exists
-        if leaf == "hook-permissions" and not os.path.isfile(PERMISSIONS_FILE):
-            continue
-        run_py = os.path.join(SKILLS_DIR, rel_path, "run.py")
-        if os.path.isfile(run_py):
-            procs.append(f"{VENV_PYTHON} skills/{rel_path}/run.py")
-    return procs
+    return build_subagent_system_prompt_shared(provider=ACTIVE_PROVIDER)
 
 
 def main():
@@ -738,17 +654,13 @@ def main():
     skills = scan_skills()
     mcp_tools = discover_mcp_tools()
     skill_tools = discover_skill_tools()
-    slash_commands = discover_slash_commands()
     permissions = load_permissions()
     if permissions:
         skill_tools = filter_denied_tools(skill_tools, permissions)
     config = {
         "url": TABULA_URL,
-        "spawn": build_spawn(),
-        "kernel_tools": discover_kernel_tools(),
-        "tools": skill_tools,
+        "skills": skill_tools,
         "plugins": discover_plugins(),
-        "commands": slash_commands,
     }
 
     json.dump(config, sys.stdout, ensure_ascii=False)

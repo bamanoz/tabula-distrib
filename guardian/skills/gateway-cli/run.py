@@ -6,7 +6,9 @@ from __future__ import annotations
 import argparse
 import os
 import queue
+import shlex
 import signal
+import subprocess
 import sys
 import threading
 import time
@@ -34,8 +36,6 @@ from tabula_plugin_sdk.protocol import (
     MSG_STREAM_START,
     MSG_TOOL_RESULT,
     MSG_TOOL_USE,
-    TOOL_PROCESS_KILL,
-    TOOL_PROCESS_SPAWN,
 )
 
 TABULA_URL = os.environ.get("TABULA_URL", "ws://localhost:8089/ws")
@@ -49,7 +49,7 @@ class GuardianGateway:
         self.driver_cmd = driver_cmd
         self.provider = provider
         self.session_id = resume_session or f"guardian-{uuid4().hex[:8]}"
-        self.driver_pid: int | None = None
+        self.driver_proc: subprocess.Popen | None = None
         self.alive = True
         self._events: queue.Queue[tuple[str, str]] = queue.Queue()
         self._turn_started = 0.0
@@ -92,57 +92,34 @@ class GuardianGateway:
         env_forward = {}
         wsroot = os.environ.get("GUARDIAN_WORKSPACE_ROOT", os.getcwd())
         env_forward["GUARDIAN_WORKSPACE_ROOT"] = wsroot
-        env_prefix = " ".join(f"{k}={v}" for k, v in env_forward.items())
-        spawn_cmd = f"{env_prefix} {self.driver_cmd} --session {self.session_id}".strip()
-        self.conn.send(
-            {
-                "type": MSG_TOOL_USE,
-                "id": "spawn-driver",
-                "name": TOOL_PROCESS_SPAWN,
-                "input": {"command": spawn_cmd},
-            }
+        env = os.environ.copy()
+        env.update(env_forward)
+        self.driver_proc = subprocess.Popen(
+            shlex.split(self.driver_cmd) + ["--session", self.session_id],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+            env=env,
         )
         deadline = time.time() + 15
-        saw_pid = False
-        saw_join = False
         while time.time() < deadline:
             msg = self.conn.recv(timeout=max(0.1, deadline - time.time()))
             if msg is None:
                 raise RuntimeError("lost connection while spawning driver")
-            if msg.get("type") == MSG_TOOL_RESULT and msg.get("id") == "spawn-driver":
-                output = msg.get("output", "")
-                if output.startswith("PID "):
-                    try:
-                        self.driver_pid = int(output.split()[1])
-                    except (IndexError, ValueError):
-                        raise RuntimeError(f"driver spawn malformed: {output}")
-                    saw_pid = True
-                    if saw_join:
-                        return
-                    continue
-                raise RuntimeError(f"driver spawn failed: {output}")
             if msg.get("type") == MSG_MEMBER_JOINED:
-                saw_join = True
-                if saw_pid:
-                    return
+                return
             if msg.get("type") == MSG_ERROR:
                 raise RuntimeError(msg.get("text", "unknown error"))
         raise RuntimeError("timeout waiting for driver spawn")
 
     def _kill_driver(self):
-        if self.driver_pid is None:
+        if self.driver_proc is None or self.driver_proc.poll() is not None:
             return
         try:
-            self.conn.send(
-                {
-                    "type": MSG_TOOL_USE,
-                    "id": "kill-driver",
-                    "name": TOOL_PROCESS_KILL,
-                    "input": {"pid": self.driver_pid},
-                }
-            )
+            os.killpg(os.getpgid(self.driver_proc.pid), signal.SIGTERM)
         except Exception:
-            pass
+            self.driver_proc.terminate()
 
     # ── Receiver ──────────────────────────────────────────────
 

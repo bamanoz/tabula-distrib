@@ -8,18 +8,25 @@ kernel = ">=0.8.0,<1.0.0"
 # The claw distro keeps its own daemon gateway wrappers in ``plugins/``;
 # per-call tools come from external bundles so other distros can pick and mix.
 
+[sources.tabula-bundles]
+source = "git+https://github.com/bamanoz/tabula-bundles.git@main"
+
 [[bundles]]
 name   = "base"
-source = "git+https://github.com/bamanoz/tabula-bundles.git@main#path=base"
+source = "source:tabula-bundles#path=base"
 
 [[bundles]]
 name   = "files"
-source = "git+https://github.com/bamanoz/tabula-bundles.git@main#path=files"
+source = "source:tabula-bundles#path=files"
 
 [[bundles]]
 name   = "drivers"
-source = "git+https://github.com/bamanoz/tabula-bundles.git@main#path=drivers"
+source = "source:tabula-bundles#path=drivers"
 
 [[bundles]]
 name   = "memory"
-source = "git+https://github.com/bamanoz/tabula-bundles.git@main#path=memory"
+source = "source:tabula-bundles#path=memory"
+
+[[bundles]]
+name   = "subagents"
+source = "source:tabula-bundles#path=subagents"

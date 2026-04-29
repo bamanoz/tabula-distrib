@@ -210,7 +210,7 @@ class Gateway:
         self.conn.send({
             "type": MSG_CONNECT,
             "name": f"gateway-cli-{self.session_id}",
-            "sends": [MSG_MESSAGE, MSG_CANCEL, MSG_TOOL_USE],
+            "sends": [MSG_MESSAGE, MSG_CANCEL],
             "receives": [
                 MSG_STREAM_START, MSG_STREAM_DELTA, MSG_STREAM_END,
                 MSG_DONE, MSG_ERROR, MSG_TOOL_USE, MSG_TOOL_RESULT, MSG_STATUS, MSG_MEMBER_JOINED,
@@ -304,14 +304,10 @@ class Gateway:
         self.waiting_since = time.time()
         self.conn.send({"type": MSG_MESSAGE, "text": text})
 
-    def send_command(self, name: str, command: dict):
-        self.waiting_since = time.time()
-        self.conn.send({
-            "type": MSG_TOOL_USE,
-            "id": f"cmd-{uuid4().hex[:8]}",
-            "name": command["tool"],
-            "input": command.get("input", {}),
-        })
+    def send_command(self, args: str, command: dict):
+        body = command.get("body", "")
+        text = body + (f"\n\nUser request: {args}" if args else "")
+        self.send_user(text)
 
     def stop(self):
         self.done.set()
@@ -390,7 +386,8 @@ def main():
                     _redraw_prompt(buf)
                     continue
                 if line.startswith("/"):
-                    cmd = line[1:].strip()
+                    raw_cmd = line[1:].strip()
+                    cmd, _, cmd_args = raw_cmd.partition(" ")
                     if cmd == "exit":
                         break
                     if cmd == "help":
@@ -400,7 +397,7 @@ def main():
                         _redraw_prompt(buf)
                         continue
                     if cmd in skill_commands:
-                        gw.send_command(cmd, skill_commands[cmd])
+                        gw.send_command(cmd_args.strip(), skill_commands[cmd])
                     else:
                         print(f"Unknown command: /{cmd}")
                         _redraw_prompt(buf)

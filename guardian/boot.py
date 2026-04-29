@@ -53,10 +53,6 @@ def build_system_prompt() -> str:
     return "\n\n".join(section for section in sections if section).strip()
 
 
-def build_spawn() -> list[str]:
-    return []
-
-
 def build_tools() -> list[dict]:
     return [
         {
@@ -71,17 +67,10 @@ def build_tools() -> list[dict]:
     ]
 
 
-def build_commands() -> list[dict]:
-    return []
-
-
 def main() -> None:
     print(json.dumps({
         "url": TABULA_URL,
-        "kernel_tools": [],
-        "spawn": build_spawn(),
-        "tools": build_tools(),
-        "commands": build_commands(),
+        "skills": build_tools(),
         "context": build_system_prompt(),
     }, ensure_ascii=False))
 

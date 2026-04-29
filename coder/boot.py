@@ -2,21 +2,16 @@
 """
 Tabula boot script for the coder distro.
 
-Like claw/boot.py, but additionally registers MCP servers as first-class
-kernel tools (`mcp__<server>__<tool>`) via `mcp.register.mcp_tool_entries`.
-
 Contract: stdout must be a single JSON object with:
   - url: kernel websocket URL
-  - spawn: list of commands to start
-  - kernel_tools: list of built-in kernel tool names
-  - tools: list of skill tool definitions (with `exec` field)
-  - commands: list of slash commands
+  - skills: list of skill tool definitions (with `exec` field)
+  - plugins: list of plugin manifest paths
+  - meta: opaque client-facing metadata
 """
 from __future__ import annotations
 
 import json
 import os
-import subprocess
 import sys
 
 ROOT = os.environ.get("TABULA_HOME", os.path.expanduser("~/.tabula"))
@@ -25,12 +20,8 @@ for path in (HOME_LIB, ROOT):
     if path not in sys.path:
         sys.path.insert(0, path)
 
-from tabula_drivers.prompt_builder import (
-    compatible_with_kernel_tools,
-    ensure_project_files as ensure_project_files_prompt_builder,
-)
+from tabula_drivers.prompt_builder import ensure_project_files as ensure_project_files_prompt_builder
 from tabula_plugin_sdk.paths import skills_dir as flat_skills_dir, templates_dir as flat_templates_dir
-from tabula_plugin_sdk.protocol import DEFAULT_KERNEL_TOOLS
 from tabula_drivers.provider_selection import resolve_provider
 from tabula_drivers.agents import load_agents, serialize_agents
 
@@ -64,18 +55,9 @@ else:
 TABULA_URL = os.environ.get("TABULA_URL", "ws://localhost:8089/ws")
 PERMISSIONS_FILE = os.path.join(TABULA_HOME, "config", "plugins", "hook-permissions", "permissions.json")
 APPROVALS_FILE = os.path.join(CONFIG_SKILLS_DIR, "hook-approvals", "rules.json")
-MCP_CONFIG = os.path.join(TABULA_HOME, "config", "plugins", "mcp", "servers.json")
 TABULA_PROVIDER = os.environ.get("TABULA_PROVIDER")
 
 ACTIVE_PROVIDER = resolve_provider(TABULA_PROVIDER, tabula_home=TABULA_HOME, require_ready=False)
-
-
-def mcp_plugin_dir() -> str:
-    return os.path.join(PLUGINS_DIR, "mcp")
-
-
-def mcp_plugin_script() -> str:
-    return os.path.join(mcp_plugin_dir(), "run.py")
 
 
 def include_skill(name: str) -> bool:
@@ -143,50 +125,19 @@ def walk_skills() -> list[tuple[str, str]]:
     return results
 
 
-KERNEL_TOOLS = set(DEFAULT_KERNEL_TOOLS)
-
-
-def discover_kernel_tools() -> list[str]:
-    raw = os.environ.get("TABULA_KERNEL_TOOLS", "")
-    if not raw.strip():
-        return list(DEFAULT_KERNEL_TOOLS)
-    tools: list[str] = []
-    unknown: list[str] = []
-    for item in raw.split(","):
-        name = item.strip()
-        if not name:
-            continue
-        if name in KERNEL_TOOLS and name not in tools:
-            tools.append(name)
-            continue
-        if name not in unknown:
-            unknown.append(name)
-    if unknown:
-        allowed = ", ".join(sorted(KERNEL_TOOLS))
-        bad = ", ".join(unknown)
-        raise SystemExit(f"unknown kernel tool(s): {bad}. Allowed: {allowed}")
-    return tools
-
-
 def discover_skill_tools() -> list[dict]:
-    visible_tools = [{"name": name} for name in discover_kernel_tools()]
     tools: list[dict] = []
     seen_index: dict[str, int] = {}
     for rel_path, skill_md in walk_skills():
         with open(skill_md) as f:
             raw = f.read().strip()
         meta, _ = parse_skill_md(raw)
-        if not compatible_with_kernel_tools(meta, visible_tools):
-            continue
         skill_tools = meta.get("tools")
         if not skill_tools or not isinstance(skill_tools, list):
             continue
         for tool in skill_tools:
             tool_name = tool.get("name", "")
             if not tool_name:
-                continue
-            if tool_name in KERNEL_TOOLS:
-                print(f"warning: tool {tool_name!r} in skill {rel_path!r} collides with kernel tool, skipping", file=sys.stderr)
                 continue
             if "exec" not in tool:
                 tool["exec"] = f"{VENV_PYTHON} skills/{rel_path}/run.py tool {tool_name}"
@@ -210,35 +161,12 @@ def discover_plugins() -> list[dict]:
     return entries
 
 
-def discover_mcp_first_class_tools() -> list[dict]:
-    """Register MCP server tools as first-class kernel tools."""
-    if os.environ.get("TABULA_SKIP_MCP"):
-        return []
-    if not os.path.isfile(MCP_CONFIG):
-        return []
-    mcp_dir = mcp_plugin_dir()
-    if not os.path.isdir(mcp_dir):
-        return []
-    try:
-        plugin_parent = os.path.dirname(mcp_dir)
-        if plugin_parent not in sys.path:
-            sys.path.insert(0, plugin_parent)
-        from mcp.register import mcp_tool_entries  # type: ignore
-    except Exception as exc:
-        print(f"warning: cannot import mcp.register: {exc}", file=sys.stderr)
-        return []
-    return mcp_tool_entries(venv_python=VENV_PYTHON, runtime_rel_path="plugins/mcp")
-
-
 def discover_slash_commands() -> list[dict]:
-    visible_tools = [{"name": name} for name in discover_kernel_tools()]
     commands: list[dict] = []
     for rel_path, skill_md in walk_skills():
         with open(skill_md) as f:
             raw = f.read().strip()
         meta, body = parse_skill_md(raw)
-        if not compatible_with_kernel_tools(meta, visible_tools):
-            continue
         ui = meta.get("user-invocable", "")
         if str(ui).lower() not in ("true", "yes", "1"):
             continue
@@ -279,59 +207,16 @@ def filter_denied_tools(tools: list[dict], permissions: list[dict]) -> list[dict
     return [t for t in tools if not is_denied(t.get("name", ""))]
 
 
-def has_crontab() -> bool:
-    try:
-        result = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
-        return result.returncode == 0 or "no crontab" in result.stderr.lower()
-    except FileNotFoundError:
-        return False
-
-
-def build_spawn() -> list[str]:
-    """Determine which processes to spawn at boot.
-
-    The TUI gateway is launched separately by the user (`bun run src/index.tsx`),
-    not auto-spawned here — it would steal the terminal.
-    """
-    procs: list[str] = []
-    cron_skill = os.path.join(SKILLS_DIR, "cron", "run.py")
-    if os.path.isfile(cron_skill) and not has_crontab():
-        procs.append(f"{VENV_PYTHON} skills/cron/run.py daemon")
-    mcp_script = mcp_plugin_script()
-    if os.path.isfile(mcp_script) and os.path.isfile(MCP_CONFIG):
-        procs.append(f"{VENV_PYTHON} plugins/mcp/run.py pool")
-    sessions_skill = os.path.join(SKILLS_DIR, "sessions", "run.py")
-    if os.path.isfile(sessions_skill):
-        procs.append(f"{VENV_PYTHON} skills/sessions/run.py daemon")
-    for rel_path, _ in walk_skills():
-        leaf = os.path.basename(rel_path)
-        if not leaf.startswith("hook-"):
-            continue
-        if leaf == "hook-permissions" and not os.path.isfile(PERMISSIONS_FILE):
-            continue
-        if leaf == "hook-approvals" and not os.path.isfile(APPROVALS_FILE):
-            continue
-        run_py = os.path.join(SKILLS_DIR, rel_path, "run.py")
-        if os.path.isfile(run_py):
-            procs.append(f"{VENV_PYTHON} skills/{rel_path}/run.py")
-    return procs
-
-
 def main():
     ensure_project_files_prompt_builder()
     skill_tools = discover_skill_tools()
-    skill_tools.extend(discover_mcp_first_class_tools())
-    slash_commands = discover_slash_commands()
     permissions = load_permissions()
     if permissions:
         skill_tools = filter_denied_tools(skill_tools, permissions)
     config = {
         "url": TABULA_URL,
-        "spawn": build_spawn(),
-        "kernel_tools": discover_kernel_tools(),
-        "tools": skill_tools,
+        "skills": skill_tools,
         "plugins": discover_plugins(),
-        "commands": slash_commands,
         "meta": {
             "agents": serialize_agents(load_agents()),
             "default_agent": "build",

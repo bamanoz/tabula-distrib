@@ -10,7 +10,7 @@ of the minimal Tabula kernel.
 - `coder-workspace` — project-root introspection, boundary hook, approvals hook.
 - `coder-git` — git tools with structured diffs.
 - `coder-tasks` — session-scoped todo list.
-- `coder-subagents` — typed subagent orchestration.
+- `subagents` — typed subagent orchestration.
 - `coder-review` — diff preview and review workflow (Phase 7).
 - in-tree `skills/gateway-tui/` — TUI gateway (Ink + React on Bun).
 

@@ -1,0 +1,83 @@
+[sources.tabula-bundles]
+source = "git+https://github.com/bamanoz/tabula-bundles.git@main"
+
+[sets]
+empty = []
+baseline = ["base", "drivers", "files", "memory", "test-fixtures"]
+base = ["base", "test-fixtures"]
+caveman = ["base", "caveman", "test-fixtures"]
+all = [
+  "base",
+  "drivers",
+  "files",
+  "memory",
+  "caveman",
+  "coder-workspace",
+  "subagents",
+  "coder-git",
+  "coder-review",
+  "coder-tasks",
+  "test-fixtures",
+]
+
+[bundles.base]
+source = "source:tabula-bundles#path=base"
+
+[bundles.drivers]
+source = "source:tabula-bundles#path=drivers"
+
+[bundles.files]
+source = "source:tabula-bundles#path=files"
+
+[bundles.memory]
+source = "source:tabula-bundles#path=memory"
+
+[bundles.caveman]
+source = "source:tabula-bundles#path=caveman"
+
+[bundles.coder-workspace]
+source = "source:tabula-bundles#path=coder-workspace"
+
+[bundles.subagents]
+source = "source:tabula-bundles#path=subagents"
+
+[bundles.coder-git]
+source = "source:tabula-bundles#path=coder-git"
+
+[bundles.coder-review]
+source = "source:tabula-bundles#path=coder-review"
+
+[bundles.coder-tasks]
+source = "source:tabula-bundles#path=coder-tasks"
+
+[bundles.test-fixtures]
+source = "source:tabula-bundles#path=test-fixtures"
+
+[suites.baseline]
+set = "baseline"
+tests = ["tests/smoke.py"]
+
+[suites.mcp]
+set = "empty"
+components = ["base:mcp"]
+tests = ["tests/test_mcp.py"]
+
+[suites.cron]
+set = "empty"
+components = ["base:cron"]
+tests = ["tests/test_cron.py"]
+
+[suites.timer]
+set = "empty"
+components = ["base:timer"]
+tests = ["tests/test_timer.py"]
+
+[suites.sessions]
+set = "empty"
+components = ["base:sessions"]
+tests = ["tests/test_sessions.py"]
+
+[suites.subagents]
+set = "empty"
+components = ["drivers:subagent", "subagents:subagents"]
+tests = ["tests/test_subagents.py"]
